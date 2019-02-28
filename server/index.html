@@ -1,0 +1,146 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Stict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-
+strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang = "zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="Access-Control-Allow-Origin" content="http://localhost:8888">
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+</head>
+<body>
+<h1>前端跨域的爱恨情仇</h1>
+<div id="app">
+  <p>JSON方案</p>
+  <hr/>
+  <button v-on:click="showUserByDynamic">动态Script</button>
+  <button v-on:click="showUserByFetch">Fetch API</button>
+  <button v-on:click="showUserByXhr">XHR API</button>
+  <button v-on:click="showUserByAjax">$.ajax()</button>
+  <hr/>
+  <div id="jsonp-result"></div>
+   <hr/>
+  <p>CORS方案</p>
+  <button v-on:click="showUserByFetchCors">Fetch API</button>
+  <button v-on:click="showUserByXhrCors">XHR API</button>
+  <hr/>
+  <div id="cors-result"></div>
+</div>
+<script>
+var vm = new Vue({
+  el: "#app",
+  methods: {
+    //动态创建scipt调用JSONP
+    showUserByDynamic:function(){
+      var self = this;
+      var script = document.createElement("script");
+      script.src = "https://localhost:5001/api/user/1?callback=showUser"; 
+      document.body.appendChild(script); 
+    },
+
+    //基于Fecth API调用JSONP
+    showUserByFetch:function(){
+      fetch("https://localhost:5001/api/user/1")
+        .then(function(response) {
+          return response.json();
+        })
+        .then(function(user) {
+          showUser(user);
+        });
+    },
+
+    //基于原生XHR调用JSONP
+    showUserByXhr:function(){
+      var xhr = new XMLHttpRequest();
+      xhr.onreadystatechange = function () {
+        if(xhr.readyState === 4){
+          if((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304){
+              var user = JSON.parse(xhr.responseText)
+              showUser(user);
+          }else{
+              console.log(xhr.status);
+          }
+        }
+      }
+
+      xhr.open('GET', "https://localhost:5001/api/user/1", true); 
+      xhr.send(null)
+    },
+    
+
+    //基于$.ajax()调用JSONP
+    showUserByAjax:function(){
+      $.ajax({
+            type: "get",
+            url: "http://localhost:5000/api/user/1",
+            dataType: "jsonp",
+            jsonp: "callback",
+            data: "",
+            success: function (user) {
+                showUser(user);
+            }
+        });
+    },
+
+    //服务端支持CORS时调用Fetch
+    showUserByFetchCors:function(){
+      fetch('http://localhost:5000/api/user/1', {
+        credentials: 'include',
+        headers: {
+        "access-control-allow-origin":"http://localhost:8888"
+      }})
+      .then(function(response) {
+          return response.json();
+        })
+        .then(function(user) {
+          showUserCors(user);
+        });
+    },
+
+    //服务端支持CORS时调用XHR
+    showUserByXhrCors:function(){
+      var xhr=new XMLHttpRequest();
+      if("withCredentials" in xhr){
+        xhr.withCredentials = true;
+        xhr.open("get","http://localhost:5000/api/user/1");
+        xhr.setRequestHeader("Host","http://localhost:8888");
+        xhr.setRequestHeader("Accept","application/json");
+        xhr.setRequestHeader("Access-Control-Allow-Origin","http://localhost:8888");
+        xhr.setRequestHeader("Access-Control-Request-Method","GET");
+      }else if(typeof XDomainRequest !=="undefined"){
+        xhr=new XDomainRequest();
+          xhr.open("GET",url);  
+          xhr.setRequestHeader("Access-Control-Allow-Origin","http://localhost:8888");
+      }else{
+        alert("无法创建XHR")
+      }
+
+      xhr.onload=function(){
+        if(xhr.readyState==4){
+            if(xhr.status>=200 && xhr.status<300 || xhr.status==304){
+              showUserCors(JSON.parse(xhr.responseText))
+            }else{
+              console.log(xhr.status);
+            }
+        }
+      };
+
+      xhr.send(null);           
+    }
+  }
+});
+
+//展示用户信息
+function showUser(user){
+  var result = document.getElementById('jsonp-result');
+  result.innerText = '用户ID：' + user.uid + ", 姓名：" + user.name + ', 性别：' + user.gender;
+}
+
+//展示用户信息
+function showUserCors(user){
+  var result = document.getElementById('cors-result');
+  result.innerText = '用户ID：' + user.uid + ", 姓名：" + user.name + ', 性别：' + user.gender;
+}
+</script>
+<script src="https://localhost:5001/api/user/1?callback=showUser"></script>
+</body>
+</html>

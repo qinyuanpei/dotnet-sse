@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h1>DotNet-SSE</h1>
+<div id="result"></div>
+<script>
+if ('EventSource' in window) {
+  var source = new EventSource('http://localhost:5000/api/SSE/');
+  
+  /* open事件回调函数 */
+  source.onopen = function(){ 
+  	document.getElementById("result").innerHTML+= "SSE通道已建立...<br/>";
+  };
+  
+  /* message事件回调函数 */
+  source.onmessage = function(evt){
+  	document.getElementById("result").innerHTML+= "Message: " + event.data + "<br/>";
+  }
+  
+  /* error事件回调函数 */
+  source.onerror = function(evt){
+      document.getElementById("result").innerHTML+= "SSE通道发生错误<br/>";
+  }
+  
+  /* 自定义事件回调 */
+  source.addEventListener('SSE_Start', function (event) {
+  	document.getElementById("result").innerHTML += "SSE_Start: " + event.data + "<br/>";
+  },false);
+}
+</script>
+</body>
+</html>
