@@ -44,6 +44,8 @@ var vm = new Vue({
           return response.json();
         })
         .then(function(user) {
+          console.log('通过Fetch API调用JSONP');
+          console.log(user);
           showUser(user);
         });
     },
@@ -54,7 +56,9 @@ var vm = new Vue({
       xhr.onreadystatechange = function () {
         if(xhr.readyState === 4){
           if((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304){
+              console.log('通过原生XHR调用JSONP');
               var user = JSON.parse(xhr.responseText)
+              console.log(user);
               showUser(user);
           }else{
               console.log(xhr.status);
@@ -76,6 +80,8 @@ var vm = new Vue({
             jsonp: "callback",
             data: "",
             success: function (user) {
+                console.log('通过$.ajax()调用JSONP');
+                console.log(user);
                 showUser(user);
             }
         });
@@ -86,12 +92,16 @@ var vm = new Vue({
       fetch('http://localhost:5000/api/user/1', {
         credentials: 'include',
         headers: {
-        "Access-Control-Allow-Origin":"http://localhost:8888"
+        "Access-Control-Allow-Origin":"http://localhost:8888",
+        "X-ASP-NET-Core":"Micorsoft",
+        "X-UserName":"qinyuanpei"
       }})
       .then(function(response) {
           return response.json();
         })
         .then(function(user) {
+          console.log('通过Fetch CORS实现跨域访问');
+          console.log(user);
           showUserCors(user);
         });
     },
@@ -102,15 +112,16 @@ var vm = new Vue({
       if("withCredentials" in xhr){
         xhr.withCredentials = true;
         xhr.open("get","http://localhost:5000/api/user/1");
-        xhr.setRequestHeader("Accept","application/json");
         xhr.setRequestHeader("Access-Control-Allow-Origin","http://localhost:8888");
       }
 
       xhr.onload=function(){
         if(xhr.readyState==4){
             if(xhr.status>=200 && xhr.status<300 || xhr.status==304){
-              console.log('')
-              showUserCors(JSON.parse(xhr.responseText))
+              console.log('通过XHR CORS实现跨域访问');
+              var user = JSON.parse(xhr.responseText);
+              console.log(user);
+              showUserCors(user);
             }else{
               console.log(xhr.status);
             }
