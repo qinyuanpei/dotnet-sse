@@ -21,6 +21,7 @@ namespace DotNet_SSE.Controllers
 
         // GET api/user/5?callback=
         [HttpGet("{id}")]
+        [EnableCors("AllowOne")]
         public IActionResult Get(string id, string callback)
         {
             var userInfo = _userList.Find(x=>x.UserId == id);

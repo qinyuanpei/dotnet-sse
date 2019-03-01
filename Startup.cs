@@ -41,10 +41,10 @@ namespace DotNet_SSE
             services.AddCors(opt=>{
                 opt.AddPolicy("AllowOne", builder => {
                     builder.WithOrigins("http://localhost:8888")
-                        .WithMethods("GET")
-                        .WithHeaders(HeaderNames.ContentType.)
+                        .WithHeaders("Access-Control-Allow-Origin")
+                        .WithMethods("GET","POST","PUT","OPTION")
+                        //.WithExposedHeaders("X-ASP-NET-Core","X-UserName")
                         .AllowCredentials();
-
                 });
             });
         }

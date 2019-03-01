@@ -86,7 +86,7 @@ var vm = new Vue({
       fetch('http://localhost:5000/api/user/1', {
         credentials: 'include',
         headers: {
-        "access-control-allow-origin":"http://localhost:8888"
+        "Access-Control-Allow-Origin":"http://localhost:8888"
       }})
       .then(function(response) {
           return response.json();
@@ -102,21 +102,14 @@ var vm = new Vue({
       if("withCredentials" in xhr){
         xhr.withCredentials = true;
         xhr.open("get","http://localhost:5000/api/user/1");
-        xhr.setRequestHeader("Host","http://localhost:8888");
         xhr.setRequestHeader("Accept","application/json");
         xhr.setRequestHeader("Access-Control-Allow-Origin","http://localhost:8888");
-        xhr.setRequestHeader("Access-Control-Request-Method","GET");
-      }else if(typeof XDomainRequest !=="undefined"){
-        xhr=new XDomainRequest();
-          xhr.open("GET",url);  
-          xhr.setRequestHeader("Access-Control-Allow-Origin","http://localhost:8888");
-      }else{
-        alert("无法创建XHR")
       }
 
       xhr.onload=function(){
         if(xhr.readyState==4){
             if(xhr.status>=200 && xhr.status<300 || xhr.status==304){
+              console.log('')
               showUserCors(JSON.parse(xhr.responseText))
             }else{
               console.log(xhr.status);
